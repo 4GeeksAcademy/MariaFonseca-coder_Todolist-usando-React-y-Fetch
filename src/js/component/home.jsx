@@ -4,24 +4,6 @@ const Home = () => {
   const [inputText, setInput] = useState("");
   const [toDo, setToDo] = useState([]);
 
-  //************POST: Creación de usuario************
-  function crearUsuario() {
-    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(response => response.json())
-      .then((data) => {
-        console.log("Usuario creado:", data);
-        setTimeout(() => {
-          agregarTareas();
-        }, 2000);
-      })
-      .catch((error) => console.error("Error al crear el usuario:", error));
-  }
-
   //************GET: Obtener tareas************
   const Todos = () => {
     fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
@@ -49,15 +31,32 @@ const Home = () => {
       .catch((error) => console.error("Error al obtener las tareas:", error));
   };
 
-  //************POST: Agregar tareas************
-  function agregarTareas(tareasActualizadas) {
+    //************POST: Creación de usuario************
+    function crearUsuario() {
+      fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(response => response.json())
+        .then((data) => {
+          console.log("Usuario creado:", data);
+        })
+        .catch((error) => console.error("Error al crear el usuario:", error));
+    }
+  
+
+  //************POST: Agregar tarea************
+  function agregarTarea(nuevaTarea) {
     fetch('https://playground.4geeks.com/todo/todos/MariaFonseca', {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        todos: tareasActualizadas
+        label: nuevaTarea.label,
+        done: nuevaTarea.done
       })
     })
       .then(response => {
@@ -81,18 +80,20 @@ const Home = () => {
   const sendData = (event) => {
     event.preventDefault();
     if (inputText.trim() !== "") {
-      const newTasks = { id: Date.now(), label: inputText.trim(), done: false };
-      const tareasActualizadas = [...toDo, newTasks];
-      setToDo(tareasActualizadas);
+      const nuevaTarea = {
+        label: inputText.trim(),
+        done: false,
+      };
+      setToDo([...toDo, nuevaTarea]);
       setInput("");
-      agregarTareas(tareasActualizadas);
+      agregarTarea(nuevaTarea);
     }
   };
 
   //************Eliminar una tarea específica por ID************
 const handleDelete = (id) => {
   console.log("Eliminando tarea con ID:", id);
-  fetch(`https://playground.4geeks.com/todo/users/MariaFonseca/${id}`, {
+  fetch(`https://playground.4geeks.com/todo/todos/MariaFonseca/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json"
