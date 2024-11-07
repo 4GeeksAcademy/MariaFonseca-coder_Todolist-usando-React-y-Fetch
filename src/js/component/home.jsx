@@ -5,7 +5,24 @@ const Home = () => {
   const [toDo, setToDo] = useState([]);
   const apiUrl = "https://playground.4geeks.com/todo";
 
-  const Todos=()=>{
+  //POST: Creación de usuario
+  function crearUsuario() {
+    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', { 
+      method: "POST",
+      headers:{
+        "Content-Type": "application/json"
+      }
+    })
+      .then(response => response.json())
+      .then((data) => {
+        console.log("Usuario creado:", data);
+        return agregarTareas();
+      })
+      .catch((error) => console.error("Error al crear el usuario:", error));
+  }
+
+  //GET: Obtener tareas
+  const Todos = () => {
     fetch('https://playground.4geeks.com/todo/users/MariaFonseca', { 
       method: "GET",
       headers:{
@@ -15,7 +32,8 @@ const Home = () => {
       .then((response) => {
         if (!response.ok) {
           if (response.status === 404) {
-            console.error("Error 400: Solicitud incorrecta al obtener tareas."); //ACÀ EN LUGAR DEL LOG ESTE SE LLAMA A LA FUNCIÒN POST
+            console.log("Usuario no encontrado, creando usuario...");
+            return crearUsuario();
           } else if (response.status >= 500) {
             console.error("Error en el servidor al obtener tareas.");
           }
@@ -24,34 +42,58 @@ const Home = () => {
         return response.json();
       })
       .then((data) => {
-        setToDo(data.todos);
+        console.log("Tareas obtenidas:", data);
+        setToDo(data.todos || []);
       })
       .catch((error) => console.error("Error al obtener las tareas:", error));
   }
-  useEffect(() => {
-    Todos()
-  },[])
- 
-  const updateTasksOnServer = (tasks) => {
-    fetch(apiUrl, {
-      method: "PUT",
+
+  //POST: Agregar tareas
+  function agregarTareas() {
+    fetch('https://playground.4geeks.com/todo/todos/MariaFonseca', {
+      method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(tasks),
+      body: JSON.stringify([{ label: "Tarea inicial", done: false }])
     })
-      .then((response) => {
+      .then(response => {
         if (!response.ok) {
-          if (response.status === 400) {
-            console.error("Error 400: Solicitud incorrecta al actualizar tareas.");
-          } else if (response.status >= 500) {
-            console.error("Error en el servidor al actualizar tareas.");
-          }
-          throw new Error(`Error ${response.status}`);
+          throw new Error(`Error ${response.status} al agregar tareas`);
         }
+        return response.json();
       })
-      .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
-  };
+      .then((data) => {
+        console.log("Tareas agregadas:", data);
+        Todos();
+      })
+      .catch((error) => console.error("Error al agregar las tareas:", error));
+  }
+
+  useEffect(() => {
+    Todos();
+  }, []);
+ 
+  // const updateTasksOnServer = (tasks) => {
+  //   fetch(apiUrl, {
+  //     method: "PUT",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(tasks),
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         if (response.status === 400) {
+  //           console.error("Error 400: Solicitud incorrecta al actualizar tareas.");
+  //         } else if (response.status >= 500) {
+  //           console.error("Error en el servidor al actualizar tareas.");
+  //         }
+  //         throw new Error(`Error ${response.status}`);
+  //       }
+  //     })
+  //     .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
+  // };
 
   const sendData = (event) => {
     event.preventDefault();
