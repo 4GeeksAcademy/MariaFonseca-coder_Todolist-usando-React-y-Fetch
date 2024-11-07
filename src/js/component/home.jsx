@@ -3,30 +3,30 @@ import React, { useState, useEffect } from "react";
 const Home = () => {
   const [inputText, setInput] = useState("");
   const [toDo, setToDo] = useState([]);
-  const apiUrl = "https://playground.4geeks.com/todo/users/MariaJoseFonseca"; //Para poner la API que voy a usar.
+  const apiUrl = "https://playground.4geeks.com/todo"; //Para poner la API que voy a usar.
 
   useEffect(() => {
-    fetch(apiUrl, { method: "GET" })
+    fetch(apiUrl + '/users/MariaJoseFonseca', { method: "GET" })
       .then((response) => response.json())
       .then((data) => setToDo(data))
       .catch((error) => console.error("Error al obtener las tareas:", error));
   }, []);
 
-  const updateTasksOnServer = (tasks) => {
-    fetch(apiUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(tasks),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Error en la actualización de tareas en el servidor");
-        }
-      })
-      .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
-  };
+  // const updateTasksOnServer = (tasks) => {
+  //   fetch(apiUrl, {
+  //     method: "PUT",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(tasks),
+  //   })
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error("Error en la actualización de tareas en el servidor");
+  //       }
+  //     })
+  //     .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
+  // };
 
   //NO RECUERDO SI ACÁ ES POST MEJOR
   const sendData = (event) => {
@@ -38,12 +38,12 @@ const Home = () => {
       updateTasksOnServer(newTasks); //PUT para actualizar
     }
   };
-
-  const handleDelete = (index) => {
-    const updatedToDo = toDo.filter((_, i) => i !== index);
-    setToDo(updatedToDo);
-    updateTasksOnServer(updatedToDo); //PUT para actualizar
-  };
+  // //Aplicar DELETE por id
+  // const handleDelete = (index) => {
+  //   const updatedToDo = toDo.filter((_, i) => i !== index);
+  //   setToDo(updatedToDo);
+  //   updateTasksOnServer(updatedToDo); //PUT para actualizar
+  // };
 
   const clearAllTasks = () => {
     fetch(apiUrl, { method: "DELETE" })
@@ -79,7 +79,7 @@ const Home = () => {
                   key={index}
                   className="list-group-item d-flex justify-content-between align-items-center text-muted"
                 >
-                  {task}
+                  {task.label}
                   <button
                     type="button"
                     className="btn p-0 m-0"
