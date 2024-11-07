@@ -3,55 +3,84 @@ import React, { useState, useEffect } from "react";
 const Home = () => {
   const [inputText, setInput] = useState("");
   const [toDo, setToDo] = useState([]);
-  const apiUrl = "https://playground.4geeks.com/todo"; //Para poner la API que voy a usar.
+  const apiUrl = "https://playground.4geeks.com/todo";
 
-  useEffect(() => {
-    fetch(apiUrl + '/users/MariaJoseFonseca', { method: "GET" })
-      .then((response) => response.json())
-      .then((data) => setToDo(data))
+  const Todos=()=>{
+    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', { 
+      method: "GET",
+      headers:{
+        "Content-Type": "application/json"
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.error("Error 400: Solicitud incorrecta al obtener tareas."); //ACÀ EN LUGAR DEL LOG ESTE SE LLAMA A LA FUNCIÒN POST
+          } else if (response.status >= 500) {
+            console.error("Error en el servidor al obtener tareas.");
+          }
+          throw new Error(`Error ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setToDo(data.todos);
+      })
       .catch((error) => console.error("Error al obtener las tareas:", error));
-  }, []);
+  }
+  useEffect(() => {
+    Todos()
+  },[])
+ 
+  const updateTasksOnServer = (tasks) => {
+    fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(tasks),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 400) {
+            console.error("Error 400: Solicitud incorrecta al actualizar tareas.");
+          } else if (response.status >= 500) {
+            console.error("Error en el servidor al actualizar tareas.");
+          }
+          throw new Error(`Error ${response.status}`);
+        }
+      })
+      .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
+  };
 
-  // const updateTasksOnServer = (tasks) => {
-  //   fetch(apiUrl, {
-  //     method: "PUT",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(tasks),
-  //   })
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error("Error en la actualización de tareas en el servidor");
-  //       }
-  //     })
-  //     .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
-  // };
-
-  //NO RECUERDO SI ACÁ ES POST MEJOR
   const sendData = (event) => {
     event.preventDefault();
     if (inputText.trim() !== "") {
-      const newTasks = [...toDo, inputText.trim()];
+      const newTasks = [...toDo, { label: inputText.trim(), done: false }];
       setToDo(newTasks);
       setInput("");
-      updateTasksOnServer(newTasks); //PUT para actualizar
+      updateTasksOnServer(newTasks);
     }
   };
-  // //Aplicar DELETE por id
-  // const handleDelete = (index) => {
-  //   const updatedToDo = toDo.filter((_, i) => i !== index);
-  //   setToDo(updatedToDo);
-  //   updateTasksOnServer(updatedToDo); //PUT para actualizar
-  // };
+
+  const handleDelete = (index) => {
+    const updatedToDo = toDo.filter((_, i) => i !== index);
+    setToDo(updatedToDo);
+    updateTasksOnServer(updatedToDo);
+  };
 
   const clearAllTasks = () => {
     fetch(apiUrl, { method: "DELETE" })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Error al eliminar todas las tareas en el servidor");
+          if (response.status === 400) {
+            console.error("Error 400: Solicitud incorrecta al eliminar todas las tareas.");
+          } else if (response.status >= 500) {
+            console.error("Error en el servidor al eliminar todas las tareas.");
+          }
+          throw new Error(`Error ${response.status}`);
         }
-        setToDo([]);
+        setToDo([]);a
       })
       .catch((error) => console.error("Error al eliminar todas las tareas:", error));
   };
