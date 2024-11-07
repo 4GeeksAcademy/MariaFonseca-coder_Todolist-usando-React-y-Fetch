@@ -3,29 +3,30 @@ import React, { useState, useEffect } from "react";
 const Home = () => {
   const [inputText, setInput] = useState("");
   const [toDo, setToDo] = useState([]);
-  const apiUrl = "https://playground.4geeks.com/todo";
 
-  //POST: Creación de usuario
+  //************POST: Creación de usuario************
   function crearUsuario() {
-    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', { 
+    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
       method: "POST",
-      headers:{
+      headers: {
         "Content-Type": "application/json"
       }
     })
       .then(response => response.json())
       .then((data) => {
         console.log("Usuario creado:", data);
-        return agregarTareas();
+        setTimeout(() => {
+          agregarTareas();
+        }, 2000);
       })
       .catch((error) => console.error("Error al crear el usuario:", error));
   }
 
-  //GET: Obtener tareas
+  //************GET: Obtener tareas************
   const Todos = () => {
-    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', { 
+    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
       method: "GET",
-      headers:{
+      headers: {
         "Content-Type": "application/json"
       }
     })
@@ -46,83 +47,86 @@ const Home = () => {
         setToDo(data.todos || []);
       })
       .catch((error) => console.error("Error al obtener las tareas:", error));
-  }
+  };
 
-  //POST: Agregar tareas
-  function agregarTareas() {
+  //************POST: Agregar tareas************
+  function agregarTareas(tareasActualizadas) {
     fetch('https://playground.4geeks.com/todo/todos/MariaFonseca', {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify([{ label: "Tarea inicial", done: false }])
+      body: JSON.stringify({
+        todos: tareasActualizadas
+      })
     })
       .then(response => {
         if (!response.ok) {
-          throw new Error(`Error ${response.status} al agregar tareas`);
+          throw new Error(`Error ${response.status} al agregar tareas en la API`);
         }
         return response.json();
       })
       .then((data) => {
-        console.log("Tareas agregadas:", data);
+        console.log("Tareas agregadas a la API:", data);
         Todos();
       })
-      .catch((error) => console.error("Error al agregar las tareas:", error));
+      .catch((error) => console.error("Error al agregar las tareas a la API:", error));
   }
 
   useEffect(() => {
     Todos();
   }, []);
- 
-  // const updateTasksOnServer = (tasks) => {
-  //   fetch(apiUrl, {
-  //     method: "PUT",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(tasks),
-  //   })
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         if (response.status === 400) {
-  //           console.error("Error 400: Solicitud incorrecta al actualizar tareas.");
-  //         } else if (response.status >= 500) {
-  //           console.error("Error en el servidor al actualizar tareas.");
-  //         }
-  //         throw new Error(`Error ${response.status}`);
-  //       }
-  //     })
-  //     .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
-  // };
 
+  //************Agrega tareas a la API************
   const sendData = (event) => {
     event.preventDefault();
     if (inputText.trim() !== "") {
-      const newTasks = [...toDo, { label: inputText.trim(), done: false }];
-      setToDo(newTasks);
+      const newTasks = { id: Date.now(), label: inputText.trim(), done: false };
+      const tareasActualizadas = [...toDo, newTasks];
+      setToDo(tareasActualizadas);
       setInput("");
-      updateTasksOnServer(newTasks);
+      agregarTareas(tareasActualizadas);
     }
   };
 
-  const handleDelete = (index) => {
-    const updatedToDo = toDo.filter((_, i) => i !== index);
-    setToDo(updatedToDo);
-    updateTasksOnServer(updatedToDo);
-  };
+  //************Eliminar una tarea específica por ID************
+const handleDelete = (id) => {
+  console.log("Eliminando tarea con ID:", id);
+  fetch(`https://playground.4geeks.com/todo/users/MariaFonseca/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} al eliminar la tarea en la API`);
+      }
+      return response.json();
+    })
+    .then(() => {
+      const updatedToDo = toDo.filter((task) => task.id !== id);
+      setToDo(updatedToDo);
+      console.log("Tarea eliminada exitosamente.");
+    })
+    .catch((error) => console.error("Error al eliminar la tarea:", error));
+};
 
+  //************Eliminar todas las tareas************
   const clearAllTasks = () => {
-    fetch(apiUrl, { method: "DELETE" })
-      .then((response) => {
-        if (!response.ok) {
-          if (response.status === 400) {
-            console.error("Error 400: Solicitud incorrecta al eliminar todas las tareas.");
-          } else if (response.status >= 500) {
-            console.error("Error en el servidor al eliminar todas las tareas.");
+    Promise.all(
+      toDo.map((task) =>
+        fetch(`https://playground.4geeks.com/todo/todos/MariaFonseca/${task.id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
           }
-          throw new Error(`Error ${response.status}`);
-        }
-        setToDo([]);a
+        })
+      )
+    )
+      .then(() => {
+        setToDo([]);
+        console.log("Todas las tareas fueron eliminadas.");
       })
       .catch((error) => console.error("Error al eliminar todas las tareas:", error));
   };
@@ -145,16 +149,16 @@ const Home = () => {
                 No hay tareas, añadir tareas
               </li>
             ) : (
-              toDo.map((task, index) => (
+              toDo.map((task) => (
                 <li
-                  key={index}
+                  key={task.id}
                   className="list-group-item d-flex justify-content-between align-items-center text-muted"
                 >
                   {task.label}
                   <button
                     type="button"
                     className="btn p-0 m-0"
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(task.id)}
                   >
                     <i className="fas fa-trash-alt" style={{ fontSize: "0.5rem" }}></i>
                   </button>
