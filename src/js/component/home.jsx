@@ -91,33 +91,33 @@ const Home = () => {
   };
 
   //************Eliminar una tarea específica por ID************
-const handleDelete = (id) => {
-  console.log("Eliminando tarea con ID:", id);
-  fetch(`https://playground.4geeks.com/todo/todos/MariaFonseca/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json"
-    }
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Error ${response.status} al eliminar la tarea en la API`);
+  const handleDelete = (id) => {
+    console.log("Eliminando tarea con ID:", id);
+    fetch(`https://playground.4geeks.com/todo/todos/MariaFonseca/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
       }
-      return response.json();
     })
-    .then(() => {
-      const updatedToDo = toDo.filter((task) => task.id !== id);
-      setToDo(updatedToDo);
-      console.log("Tarea eliminada exitosamente.");
-    })
-    .catch((error) => console.error("Error al eliminar la tarea:", error));
-};
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error ${response.status} al eliminar la tarea en la API`);
+        }
+        return response.json();
+      })
+      .then(() => {
+        const updatedToDo = toDo.filter((task) => task.id !== id);
+        setToDo(updatedToDo);
+        console.log("Tarea eliminada exitosamente.");
+      })
+      .catch((error) => console.error("Error al eliminar la tarea:", error));
+  };
 
   //************Eliminar todas las tareas************
   const clearAllTasks = () => {
     Promise.all(
       toDo.map((task) =>
-        fetch(`https://playground.4geeks.com/todo/todos/MariaFonseca/${task.id}`, {
+        fetch(`https://playground.4geeks.com/todo/users/MariaFonseca`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json"
@@ -126,6 +126,7 @@ const handleDelete = (id) => {
       )
     )
       .then(() => {
+        crearUsuario();
         setToDo([]);
         console.log("Todas las tareas fueron eliminadas.");
       })
