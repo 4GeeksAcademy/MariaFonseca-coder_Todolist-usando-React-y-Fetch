@@ -3,63 +3,57 @@ import React, { useState, useEffect } from "react";
 const Home = () => {
   const [inputText, setInput] = useState("");
   const [toDo, setToDo] = useState([]);
-  const apiUrl = "https://your-api-url.com/todos"; // Reemplaza con la URL de tu API
+  const apiUrl = "https://playground.4geeks.com/todo/users/MariaJoseFonseca"; //Para poner la API que voy a usar.
 
-  // Obtener las tareas del servidor al cargar el componente
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await fetch(apiUrl, { method: "GET" });
-        const data = await response.json();
-        setToDo(data); // Asume que `data` es un array de tareas
-      } catch (error) {
-        console.error("Error al obtener las tareas:", error);
-      }
-    };
-    fetchTasks();
+    fetch(apiUrl, { method: "GET" })
+      .then((response) => response.json())
+      .then((data) => setToDo(data))
+      .catch((error) => console.error("Error al obtener las tareas:", error));
   }, []);
 
-  // Sincronizar la lista completa de tareas con el servidor
-  const updateTasksOnServer = async (tasks) => {
-    try {
-      await fetch(apiUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(tasks),
-      });
-    } catch (error) {
-      console.error("Error al actualizar las tareas en el servidor:", error);
-    }
+  const updateTasksOnServer = (tasks) => {
+    fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(tasks),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Error en la actualización de tareas en el servidor");
+        }
+      })
+      .catch((error) => console.error("Error al actualizar las tareas en el servidor:", error));
   };
 
-  // Agregar una nueva tarea
+  //NO RECUERDO SI ACÁ ES POST MEJOR
   const sendData = (event) => {
     event.preventDefault();
     if (inputText.trim() !== "") {
       const newTasks = [...toDo, inputText.trim()];
       setToDo(newTasks);
       setInput("");
-      updateTasksOnServer(newTasks); // PUT para actualizar la lista
+      updateTasksOnServer(newTasks); //PUT para actualizar
     }
   };
 
-  // Eliminar una tarea específica
   const handleDelete = (index) => {
     const updatedToDo = toDo.filter((_, i) => i !== index);
     setToDo(updatedToDo);
-    updateTasksOnServer(updatedToDo); // PUT para actualizar la lista
+    updateTasksOnServer(updatedToDo); //PUT para actualizar
   };
 
-  // Borrar todas las tareas
-  const clearAllTasks = async () => {
-    try {
-      await fetch(apiUrl, { method: "DELETE" }); // DELETE para limpiar el servidor
-      setToDo([]); // Actualizar el estado a lista vacía
-    } catch (error) {
-      console.error("Error al eliminar todas las tareas:", error);
-    }
+  const clearAllTasks = () => {
+    fetch(apiUrl, { method: "DELETE" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Error al eliminar todas las tareas en el servidor");
+        }
+        setToDo([]);
+      })
+      .catch((error) => console.error("Error al eliminar todas las tareas:", error));
   };
 
   return (
