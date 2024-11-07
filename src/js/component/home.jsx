@@ -31,21 +31,21 @@ const Home = () => {
       .catch((error) => console.error("Error al obtener las tareas:", error));
   };
 
-    //************POST: Creación de usuario************
-    function crearUsuario() {
-      fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
+  //************POST: Creación de usuario************
+  function crearUsuario() {
+    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then(response => response.json())
+      .then((data) => {
+        console.log("Usuario creado:", data);
       })
-        .then(response => response.json())
-        .then((data) => {
-          console.log("Usuario creado:", data);
-        })
-        .catch((error) => console.error("Error al crear el usuario:", error));
-    }
-  
+      .catch((error) => console.error("Error al crear el usuario:", error));
+  }
+
 
   //************POST: Agregar tarea************
   function agregarTarea(nuevaTarea) {
@@ -93,22 +93,22 @@ const Home = () => {
   //************Eliminar una tarea específica por ID************
   const handleDelete = (id) => {
     console.log("Eliminando tarea con ID:", id);
-    fetch(`https://playground.4geeks.com/todo/todos/MariaFonseca/${id}`, {
+    fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
       }
     })
+      .then(() => {
+        const updatedToDo = toDo.filter((task) => task.id !== id);
+        setToDo(updatedToDo);
+        console.log("Tarea eliminada exitosamente.");
+      })
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Error ${response.status} al eliminar la tarea en la API`);
         }
         return response.json();
-      })
-      .then(() => {
-        const updatedToDo = toDo.filter((task) => task.id !== id);
-        setToDo(updatedToDo);
-        console.log("Tarea eliminada exitosamente.");
       })
       .catch((error) => console.error("Error al eliminar la tarea:", error));
   };
