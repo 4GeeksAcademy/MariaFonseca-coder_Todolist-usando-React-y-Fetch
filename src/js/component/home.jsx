@@ -174,6 +174,9 @@ const Home = () => {
           <button type="button" className="btn btn-danger mt-3" onClick={clearAllTasks}>
             Clear All Tasks
           </button>
+          <button type="button" className="btn btn-primary text-light mt-3">
+            Delete User
+          </button>
         </div>
       </form>
     </div>
