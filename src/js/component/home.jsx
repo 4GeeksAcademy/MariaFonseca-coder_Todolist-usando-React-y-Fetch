@@ -90,7 +90,7 @@ const Home = () => {
     }
   };
 
-  //************Eliminar una tarea específica por ID************
+  //************DELETE: Eliminar una tarea específica por ID************
   const handleDelete = (id) => {
     console.log("Eliminando tarea con ID:", id);
     fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
@@ -113,7 +113,7 @@ const Home = () => {
       .catch((error) => console.error("Error al eliminar la tarea:", error));
   };
 
-  //************Eliminar todas las tareas************
+  //************DELETE: Eliminar todas las tareas************
   const clearAllTasks = () => {
     Promise.all(
       toDo.map((task) =>
@@ -132,6 +132,25 @@ const Home = () => {
       })
       .catch((error) => console.error("Error al eliminar todas las tareas:", error));
   };
+
+  //************DELETE: Eliminar usuario************
+  function DeleteUser() {
+    fetch('https://playground.4geeks.com/todo/users/MariaFonseca', {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Error ${response.status} al eliminar el usuario`);
+        }
+        setToDo([]);
+        console.log("Usuario eliminado exitosamente.");
+      })
+      .catch((error) => console.error("Error al eliminar el usuario:", error));
+  }
+
 
   return (
     <div className="container">
@@ -174,7 +193,7 @@ const Home = () => {
           <button type="button" className="btn btn-danger mt-3" onClick={clearAllTasks}>
             Clear All Tasks
           </button>
-          <button type="button" className="btn btn-primary text-light mt-3">
+          <button type="button" className="btn btn-primary text-light mt-3" onClick={DeleteUser}>
             Delete User
           </button>
         </div>
